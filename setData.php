@@ -2,14 +2,15 @@
 require 'database.php';
 
 if (!empty($_POST)) {
-    $Stat = $_POST['Stat'];
-
-    // insert data
+    $id = $_POST["ID"];
+    $status = $_POST["Status"];
     $pdo = Database::connect();
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $sql = "UPDATE statusled2 SET Stat = ? WHERE ID = 0";
+    $sql = 'UPDATE statusled2 SET Stat = ? WHERE ID = ?';
+
     $q = $pdo->prepare($sql);
-    $q->execute(array($Stat));
+    $q->execute(array($status, $id));
     Database::disconnect();
-    header("Location: Main.php");
+
+    echo "Status updated";
 }

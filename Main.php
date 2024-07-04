@@ -1,8 +1,19 @@
 <?php
-$Write = "<?php $" . "getLEDStatusFromNodeMCU=''; " . "echo $" . "getLEDStatusFromNodeMCU;" . " ?>";
-file_put_contents('LEDStatContainer.php', $Write);
-?>
+require 'Database.php';
+$pdo = Database::connect();
 
+$sql = "SELECT Stat FROM statusled2 ORDER BY id DESC LIMIT 1";
+$q = $pdo->prepare($sql);
+$q->execute();
+$result = $q->fetch(PDO::FETCH_ASSOC);
+
+$ledStatus = "";
+if ($result) {
+    $ledStatus = $result['Stat'] == 1 ? " ON" : " OFF";
+}
+
+Database::disconnect();
+?>
 
 <!DOCTYPE html>
 <html>
@@ -13,9 +24,20 @@ file_put_contents('LEDStatContainer.php', $Write);
     <script src="jquery.min.js"></script>
     <script>
         $(document).ready(function() {
-            $("#getLEDStatus").load("LEDStatContainer.php");
             setInterval(function() {
-                $("#getLEDStatus").load("LEDStatContainer.php");
+                $.ajax({
+                    url: "getLEDStatus.php",
+                    success: function(data) {
+                        var LEDStatus = data.trim();
+                        if (LEDStatus == "1") {
+                            $("#ledstatus").html(" ON");
+                        } else if (LEDStatus == "0") {
+                            $("#ledstatus").html(" OFF");
+                        } else {
+                            $("#ledstatus").html("LED Status = Waiting for the Status LED from NodeMCU...");
+                        }
+                    }
+                });
             }, 500);
         });
     </script>
@@ -106,26 +128,8 @@ file_put_contents('LEDStatContainer.php', $Write);
     <button class="buttonON" name="subject" type="submit" form="LED_ON" value="SubmitLEDON">LED ON</button>
     <button class="buttonOFF" name="subject" type="submit" form="LED_OFF" value="SubmitLEDOFF">LED OFF</button>
 
-    <h2 id="ledstatus" style="color:#6f4a8e;">LED Status = </h2>
-    <p id="getLEDStatus" hidden></p>
+    <h2 id="ledstatus" style="color:#6f4a8e;">LED Status = <?php echo $ledStatus; ?></h2>
 
-    <script>
-        var myVar = setInterval(myTimer, 500);
-
-        function myTimer() {
-            var getLEDStat = document.getElementById("getLEDStatus").innerHTML;
-            var LEDStatus = getLEDStat;
-            if (LEDStatus == 1) {
-                document.getElementById("ledstatus").innerHTML = "LED Status = ON";
-            }
-            if (LEDStatus == 0) {
-                document.getElementById("ledstatus").innerHTML = "LED Status = OFF";
-            }
-            if (LEDStatus == "") {
-                document.getElementById("ledstatus").innerHTML = "LED Status = Waiting for the Status LED from NodeMCU...";
-            }
-        }
-    </script>
 </body>
 
 </html>

@@ -5,8 +5,9 @@ class Database
     private static $dbHost = 'localhost';
     private static $dbUsername = 'root';
     private static $dbUserPassword = '';
+    private static $dbPort = 3307;
 
-    private static $cont  = null;
+    private static $cont = null;
 
     public function __construct()
     {
@@ -15,10 +16,11 @@ class Database
 
     public static function connect()
     {
-        // One connection through whole application
+        // One connection through the whole application
         if (null == self::$cont) {
             try {
-                self::$cont =  new PDO("mysql:host=" . self::$dbHost . ";" . "dbname=" . self::$dbName, self::$dbUsername, self::$dbUserPassword);
+                $dsn = "mysql:host=" . self::$dbHost . ";dbname=" . self::$dbName . ";port=" . self::$dbPort;
+                self::$cont = new PDO($dsn, self::$dbUsername, self::$dbUserPassword);
             } catch (PDOException $e) {
                 die($e->getMessage());
             }
